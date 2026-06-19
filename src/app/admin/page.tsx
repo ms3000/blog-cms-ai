@@ -1,6 +1,7 @@
 import { isAuthed } from "@/lib/auth";
 import { loginAction, logoutAction } from "./actions";
 import { AdminUploader } from "@/components/AdminUploader";
+import { AdminPostList } from "@/components/AdminPostList";
 import { getPosts } from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ export default async function AdminPage({
     );
   }
 
-  const recent = await getPosts({ limit: 10 }).catch(() => []);
+  const recent = await getPosts({ limit: 50 }).catch(() => []);
 
   return (
     <div className="mx-auto max-w-content px-5 py-12">
@@ -62,22 +63,7 @@ export default async function AdminPage({
 
       <div className="mt-14">
         <h2 className="mb-4 text-lg font-bold">최근 게시글</h2>
-        {recent.length === 0 ? (
-          <p className="text-ink-muted">아직 게시글이 없습니다.</p>
-        ) : (
-          <ul className="divide-y divide-line rounded-2xl border border-line">
-            {recent.map((p) => (
-              <li key={p.slug} className="flex items-center justify-between px-4 py-3">
-                <a href={`/blog/${p.slug}`} className="font-medium hover:text-accent line-clamp-1">
-                  {p.title}
-                </a>
-                <span className="ml-4 shrink-0 text-xs text-ink-faint">
-                  {p.category || "미분류"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <AdminPostList initialPosts={recent} />
       </div>
     </div>
   );
