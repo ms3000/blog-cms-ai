@@ -18,6 +18,7 @@ export type IngestResult = {
   cover_url: string | null;
   cover_alt: string | null;
   content_html: string; // <article> 내부, base64 → URL 치환됨
+  content_css: string | null; // 원본 <style> + 웹폰트 @import (스코프 전 원본)
   category: string | null;
   author: string | null;
   publisher: string | null;
@@ -133,6 +134,21 @@ export async function ingestHtml(html: string, uploadImage: UploadImage): Promis
   const canonical = root.querySelector('link[rel="canonical"]')?.getAttribute("href") || null;
   const ogImage = metaContent(root, 'meta[property="og:image"]');
 
+  // ---------- 원본 스타일 (<style> + 웹폰트 link) ----------
+  const styleBlocks = root
+    .querySelectorAll("style")
+    .map((s) => s.text || "")
+    .filter(Boolean);
+  const fontImports = root
+    .querySelectorAll('link[rel="stylesheet"]')
+    .map((l) => l.getAttribute("href") || "")
+    .filter((h) => /fonts\.googleapis\.com|fonts\.gstatic\.com|fastly|jsdelivr|cdn/.test(h))
+    .map((h) => `@import url("${h}");`);
+  const content_css =
+    styleBlocks.length || fontImports.length
+      ? [...fontImports, ...styleBlocks].join("\n")
+      : null;
+
   // ---------- JSON-LD ----------
   const jsonLd = firstJsonLd(root);
   const nodes = graphNodes(jsonLd);
@@ -245,6 +261,7 @@ export async function ingestHtml(html: string, uploadImage: UploadImage): Promis
     cover_url,
     cover_alt: coverAlt,
     content_html,
+    content_css,
     category,
     author: metaAuthor || ldAuthor,
     publisher: ldPublisher,

@@ -45,6 +45,7 @@ export async function savePostFromHtml(html: string): Promise<SaveResult> {
       cover_url: parsed.cover_url,
       cover_alt: parsed.cover_alt,
       content_html: parsed.content_html,
+      content_css: parsed.content_css,
       category: parsed.category,
       author: parsed.author,
       publisher: parsed.publisher,

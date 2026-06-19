@@ -8,6 +8,7 @@ export type Post = {
   cover_url: string | null;
   cover_alt: string | null;
   content_html: string;
+  content_css: string | null;
   category: string | null;
   author: string | null;
   publisher: string | null;

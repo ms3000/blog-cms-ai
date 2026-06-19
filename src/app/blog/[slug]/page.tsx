@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPostBySlug, getAllSlugs, getTagsForPost, getPosts } from "@/lib/posts";
 import { buildJsonLd, buildBreadcrumb } from "@/lib/seo";
+import { scopeCss } from "@/lib/css";
 import { absUrl, site } from "@/lib/site";
 import { formatDate } from "@/lib/format";
 import { PostCard } from "@/components/PostCard";
@@ -81,9 +82,14 @@ export default async function PostPage({ params }: { params: { slug: string } })
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
 
-      <article className="mx-auto max-w-content px-5 pt-8">
-        {/* breadcrumb */}
-        <nav className="mb-8 flex items-center gap-1.5 text-sm text-ink-faint" aria-label="breadcrumb">
+      {/* 원본 HTML 의 스타일을 .post-content 스코프로 한정 주입 (원본 디자인 100% 보존) */}
+      {post.content_css && (
+        <style dangerouslySetInnerHTML={{ __html: scopeCss(post.content_css) }} />
+      )}
+
+      {/* breadcrumb */}
+      <div className="mx-auto max-w-content px-5 pt-8">
+        <nav className="flex items-center gap-1.5 text-sm text-ink-faint" aria-label="breadcrumb">
           <Link href="/" className="hover:text-ink">홈</Link>
           <span aria-hidden>/</span>
           {post.category ? (
@@ -99,30 +105,32 @@ export default async function PostPage({ params }: { params: { slug: string } })
           ) : null}
           <span className="text-ink-soft line-clamp-1">{post.title}</span>
         </nav>
+      </div>
 
-        {/* 본문 (저장된 article HTML — 커버/제목/날짜/태그/본문 포함) */}
+      {/* 본문 — 원본의 "회색 배경 위 흰 카드" 디자인을 그대로 재현 */}
+      <section className="post-stage mt-6 w-full">
         <div
           className="post-content"
           dangerouslySetInnerHTML={{ __html: post.content_html }}
         />
+      </section>
 
-        {/* 태그 링크 */}
-        {tags.length > 0 && (
-          <div className="mx-auto mt-12 max-w-prose">
-            <div className="flex flex-wrap gap-2 border-t border-line pt-8">
-              {tags.map((t) => (
-                <Link
-                  key={t.id}
-                  href={`/tag/${t.slug}`}
-                  className="rounded-full bg-surface px-3 py-1.5 text-sm text-ink-soft transition hover:bg-accent-soft hover:text-accent"
-                >
-                  #{t.name}
-                </Link>
-              ))}
-            </div>
+      {/* 태그 링크 */}
+      {tags.length > 0 && (
+        <div className="mx-auto max-w-content px-5 pt-10">
+          <div className="mx-auto flex max-w-[670px] flex-wrap gap-2">
+            {tags.map((t) => (
+              <Link
+                key={t.id}
+                href={`/tag/${t.slug}`}
+                className="rounded-full bg-surface px-3 py-1.5 text-sm text-ink-soft transition hover:bg-accent-soft hover:text-accent"
+              >
+                #{t.name}
+              </Link>
+            ))}
           </div>
-        )}
-      </article>
+        </div>
+      )}
 
       {/* 관련 글 */}
       {related.length > 0 && (

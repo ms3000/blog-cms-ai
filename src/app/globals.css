@@ -20,25 +20,43 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* 링크 카드 호버 등 공통 */
 a {
   color: inherit;
 }
 
 /* ============================================================
-   본문 렌더링 (저장된 content_html 의 bp-* 클래스 스타일)
+   본문 렌더링 — 원본 생성기(블로그포스팅메이커)의 CSS 를 그대로 재현.
+   .post-content 스코프로 한정하여 사이트 다른 영역에 영향 없음.
+   글마다 저장된 content_css 가 있으면 포스트 페이지에서 추가 주입되어
+   이 기본값을 덮어쓴다(미래 버전 호환).
    ============================================================ */
-.post-content .bp-card {
-  width: 100%;
+
+/* 회색 무대 위에 흰 카드가 떠 보이는 원본 레이아웃 */
+.post-stage {
+  background: #e7e9f1;
+  padding: 1px 16px;
 }
 
+.post-content {
+  color: #1a2030;
+}
+
+.post-content .bp-card {
+  max-width: 670px;
+  margin: 30px auto;
+  background: #fff;
+  font-family: "Gowun Batang", serif;
+  font-size: 17px;
+  line-height: 1.95;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(20, 30, 60, 0.14);
+}
 .post-content .bp-cover {
   width: 100%;
-  margin: 0 0 2rem;
-  border-radius: 16px;
-  overflow: hidden;
-  background: #f3f4f6;
   aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #eef0f6;
 }
 .post-content .bp-cover img {
   width: 100%;
@@ -46,161 +64,216 @@ a {
   object-fit: cover;
   display: block;
 }
-
 .post-content .bp-inner {
-  max-width: 720px;
-  margin: 0 auto;
+  padding: 46px 52px 60px;
 }
-
 .post-content .bp-eyebrow {
-  display: inline-block;
-  font-size: 0.8rem;
+  font-size: 0.74em;
+  letter-spacing: 2px;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--accent);
-  margin-bottom: 0.75rem;
+  color: #5b53f0;
+  margin: 0 0 12px;
 }
-
 .post-content .bp-title {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-  line-height: 1.3;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0 0 1rem;
-  color: #0f1115;
+  font-size: 1.78em;
+  font-weight: 900;
+  line-height: 1.35;
+  letter-spacing: -0.5px;
+  margin: 0 0 12px;
 }
-
 .post-content .bp-byline {
-  font-size: 0.9rem;
-  color: #6b7280;
-  margin-bottom: 1rem;
+  font-size: 0.76em;
+  color: #69718a;
+  margin: 0 0 10px;
 }
-
 .post-content .bp-tags {
   display: flex;
+  gap: 6px;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0 0 2.5rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid #ececf0;
+  margin: 0 0 26px;
 }
 .post-content .bp-tags span {
-  font-size: 0.8rem;
-  color: #4b5563;
-  background: #f4f4f6;
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
+  font-size: 0.74em;
+  color: #5b53f0;
+  background: #f0efff;
+  padding: 4px 10px;
+  border-radius: 99px;
 }
-
-.post-content .bp-p {
-  font-size: 1.0625rem;
-  line-height: 1.85;
-  color: #2b2f36;
-  margin: 0 0 1.5rem;
-  word-break: keep-all;
-}
-
 .post-content .bp-h {
-  font-size: clamp(1.35rem, 2.6vw, 1.6rem);
+  font-size: 1.4em;
   font-weight: 800;
-  line-height: 1.4;
-  letter-spacing: -0.01em;
-  margin: 3rem 0 1.25rem;
-  padding-left: 0.85rem;
-  border-left: 4px solid var(--accent);
-  color: #0f1115;
+  margin: 34px 0 14px;
+  padding-left: 12px;
 }
-
-.post-content .bp-fig {
-  margin: 2rem 0;
+.post-content .bp-p {
+  margin: 0 0 18px;
 }
-.post-content .bp-fig img {
-  width: 100%;
-  height: auto;
-  border-radius: 14px;
-  display: block;
-  background: #f3f4f6;
-}
-.post-content .bp-fig figcaption {
-  margin-top: 0.6rem;
-  font-size: 0.85rem;
-  color: #8a909a;
-  text-align: center;
-}
-
-.post-content .bp-list {
-  margin: 0 0 1.5rem;
-  padding-left: 1.25rem;
-}
-.post-content .bp-list li {
-  font-size: 1.0625rem;
-  line-height: 1.8;
-  color: #2b2f36;
-  margin-bottom: 0.5rem;
-  word-break: keep-all;
-}
-
 .post-content .bp-quote {
-  margin: 2rem 0;
-  padding: 1.25rem 1.5rem;
-  border-left: 4px solid var(--accent);
-  background: #f7f7fb;
-  border-radius: 0 12px 12px 0;
-  font-size: 1.1rem;
-  line-height: 1.7;
-  color: #2b2f36;
+  margin: 24px 0;
+  padding: 8px 0 8px 18px;
+  border-left: 4px solid #5b53f0;
+  color: #444c60;
   font-style: italic;
 }
-
-/* FAQ (GEO) */
+/* Tailwind preflight 가 리스트 마커를 제거하므로 명시적으로 복원 */
+.post-content .bp-list {
+  margin: 0 0 18px;
+  padding-left: 24px;
+  list-style: disc;
+}
+.post-content ol.bp-list {
+  list-style: decimal;
+}
+.post-content .bp-list li {
+  margin-bottom: 7px;
+}
+.post-content .bp-fig {
+  margin: 26px 0;
+  text-align: center;
+}
+.post-content .bp-fig img {
+  max-width: 100%;
+  border-radius: 10px;
+  display: block;
+  margin: 0 auto;
+}
+.post-content .bp-fig figcaption {
+  font-size: 0.8em;
+  color: #69718a;
+  margin-top: 8px;
+}
 .post-content .bp-faq {
-  margin: 2.5rem 0;
+  margin: 26px 0;
+  border-top: 1px solid #eceef4;
 }
 .post-content .bp-faq-item {
-  border: 1px solid #ececf0;
-  border-radius: 12px;
-  padding: 1.1rem 1.25rem;
-  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #eceef4;
+  padding: 16px 0;
 }
 .post-content .bp-faq-q {
   font-weight: 700;
-  color: #0f1115;
-  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+.post-content .bp-faq-q::before {
+  content: "Q. ";
+  color: #5b53f0;
 }
 .post-content .bp-faq-a {
-  color: #4b5563;
-  line-height: 1.75;
+  color: #4b5469;
+  line-height: 1.8;
+  margin-top: 6px;
 }
-
-/* 연계상품 / 블로그 소개 */
+.post-content .bp-faq-a::before {
+  content: "A. ";
+  color: #9aa1b4;
+  font-weight: 700;
+}
 .post-content .bp-prod-grid {
   display: grid;
-  gap: 1rem;
-  margin: 2rem 0;
+  gap: 16px;
+  margin: 26px 0;
 }
-.post-content .bp-prod-grid.cols2 { grid-template-columns: repeat(2, 1fr); }
-.post-content .bp-prod-grid.cols3 { grid-template-columns: repeat(3, 1fr); }
+.post-content .bp-prod-grid.cols1 {
+  grid-template-columns: 1fr;
+}
+.post-content .bp-prod-grid.cols2 {
+  grid-template-columns: 1fr 1fr;
+}
+.post-content .bp-prod-grid.cols3 {
+  grid-template-columns: repeat(3, 1fr);
+}
 .post-content .bp-prod-card {
-  border: 1px solid #ececf0;
-  border-radius: 14px;
+  border: 1px solid #e6e8ee;
+  border-radius: 12px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
-.post-content .bp-prod-card img { width: 100%; height: auto; display: block; }
-.post-content .bp-prod-body { padding: 1rem; }
-.post-content .bp-prod-name { font-weight: 700; margin-bottom: 0.5rem; }
+.post-content .bp-prod-img {
+  aspect-ratio: 1 / 1;
+  background: #f6f8fc;
+}
+.post-content .bp-prod-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.post-content .bp-prod-body {
+  padding: 11px 13px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+.post-content .bp-prod-name {
+  font-weight: 700;
+  font-size: 0.92em;
+  line-height: 1.4;
+}
+.post-content .bp-prod-opt {
+  font-size: 0.78em;
+  color: #6b7385;
+}
+.post-content .bp-prod-price {
+  font-weight: 800;
+  color: #5b53f0;
+}
 .post-content .bp-prod-btn {
-  display: inline-block;
-  margin-top: 0.75rem;
-  padding: 0.55rem 1rem;
-  background: var(--accent);
+  margin-top: auto;
+  display: block;
+  text-align: center;
+  background: #5b53f0;
   color: #fff;
+  padding: 9px 12px;
   border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 0.85em;
   text-decoration: none;
+}
+.post-content .bp-about {
+  margin: 30px 0 0;
+  padding: 22px;
+  border: 1px solid #e6e8ee;
+  border-radius: 14px;
+  background: #fafbfd;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.post-content .bp-about-logo img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+.post-content .bp-about-name {
+  font-weight: 800;
+}
+.post-content .bp-about-desc {
+  font-size: 0.86em;
+  color: #5a6378;
+  line-height: 1.7;
+  margin-top: 4px;
+}
+.post-content .bp-about-link {
+  font-size: 0.82em;
+  margin-top: 6px;
+  display: inline-block;
+  color: #5b53f0;
+  font-weight: 700;
 }
 
 @media (max-width: 640px) {
-  .post-content .bp-prod-grid.cols2,
-  .post-content .bp-prod-grid.cols3 { grid-template-columns: 1fr; }
+  .post-stage {
+    padding: 1px 0;
+  }
+  .post-content .bp-inner {
+    padding: 28px 20px 44px;
+  }
+  .post-content .bp-prod-grid.cols3,
+  .post-content .bp-prod-grid.cols2 {
+    grid-template-columns: 1fr 1fr;
+  }
 }

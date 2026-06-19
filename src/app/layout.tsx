@@ -47,6 +47,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           as="style"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
         />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* 본문(원본 디자인)용 웹폰트 */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
+        />
       </head>
       <body className="min-h-screen flex flex-col bg-white text-ink antialiased">
         <Header />
