@@ -11,3 +11,7 @@ npm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 /_samples
+# 텔레그램 캡처/임시 이미지
+photo_*.jpg
+photo_*.jpeg
+photo_*.png
