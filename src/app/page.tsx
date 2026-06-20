@@ -8,29 +8,36 @@ import { formatDate } from "@/lib/format";
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [posts, categories] = await Promise.all([
-    getPosts({ limit: 13 }).catch(() => []),
+  const [latest, categories] = await Promise.all([
+    getPosts({ limit: 1 }).catch(() => []),
     getMenuCategories().catch(() => []),
   ]);
 
-  if (posts.length === 0) {
+  const featured = latest[0];
+
+  if (!featured) {
     return (
       <div className="mx-auto max-w-content px-5 py-32 text-center">
         <h1 className="text-3xl font-extrabold tracking-tight">아직 발행된 글이 없습니다</h1>
-        <p className="mt-4 text-ink-muted">
-          관리자 페이지에서 HTML 파일을 업로드하면 첫 글이 게시됩니다.
-        </p>
-        <Link
-          href="/admin"
-          className="mt-8 inline-block rounded-full bg-ink px-6 py-3 font-semibold text-white"
-        >
+        <p className="mt-4 text-ink-muted">관리자 페이지에서 HTML 파일을 업로드하면 첫 글이 게시됩니다.</p>
+        <Link href="/admin" className="mt-8 inline-block rounded-full bg-ink px-6 py-3 font-semibold text-white">
           관리자로 이동
         </Link>
       </div>
     );
   }
 
-  const [featured, ...rest] = posts;
+  // 카테고리별 섹션 (각 카테고리의 최근 글 3개, 피처드 제외)
+  const sections = (
+    await Promise.all(
+      categories.map(async (c) => {
+        const posts = (await getPosts({ category: c.name, limit: 4 }).catch(() => []))
+          .filter((p) => p.slug !== featured.slug)
+          .slice(0, 3);
+        return { name: c.name, count: c.count, posts };
+      })
+    )
+  ).filter((s) => s.posts.length > 0);
 
   return (
     <>
@@ -49,24 +56,18 @@ export default async function HomePage() {
           </div>
           <div>
             {featured.category && (
-              <span className="text-sm font-bold tracking-wide text-accent">
-                {featured.category}
-              </span>
+              <span className="text-sm font-bold tracking-wide text-accent">{featured.category}</span>
             )}
             <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight md:text-4xl group-hover:text-accent">
               {featured.title}
             </h1>
             {featured.excerpt && (
-              <p className="mt-4 text-base leading-relaxed text-ink-muted line-clamp-3">
-                {featured.excerpt}
-              </p>
+              <p className="mt-4 text-base leading-relaxed text-ink-muted line-clamp-3">{featured.excerpt}</p>
             )}
             <div className="mt-5 flex items-center gap-2 text-sm text-ink-faint">
               <span>{featured.author || "WEDO"}</span>
               <span aria-hidden>·</span>
               <time dateTime={featured.published_at}>{formatDate(featured.published_at)}</time>
-              <span aria-hidden>·</span>
-              <span>{featured.reading_minutes}분</span>
             </div>
           </div>
         </Link>
@@ -95,15 +96,25 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 최신 글 그리드 */}
-      <section className="mx-auto max-w-content px-5 pt-10">
-        <h2 className="mb-7 text-xl font-extrabold tracking-tight">최신 글</h2>
-        <div className="grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {rest.map((p) => (
-            <PostCard key={p.slug} post={p} />
-          ))}
-        </div>
-      </section>
+      {/* 카테고리별 섹션 */}
+      {sections.map((s) => (
+        <section key={s.name} className="mx-auto max-w-content px-5 pt-16">
+          <div className="mb-7 flex items-end justify-between">
+            <h2 className="text-xl font-extrabold tracking-tight">{s.name}</h2>
+            <Link
+              href={`/category/${encodeURIComponent(s.name)}`}
+              className="text-sm font-medium text-ink-muted transition hover:text-accent"
+            >
+              전체보기 →
+            </Link>
+          </div>
+          <div className="grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {s.posts.map((p) => (
+              <PostCard key={p.slug} post={p} />
+            ))}
+          </div>
+        </section>
+      ))}
 
       <div className="pt-24">
         <Newsletter />

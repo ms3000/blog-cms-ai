@@ -35,6 +35,28 @@ export function AdminPostList({
     }
   }
 
+  async function changeAuthor(slug: string, author: string) {
+    const cur = posts.find((p) => p.slug === slug);
+    if ((cur?.author || "") === author) return; // 변경 없음
+    setBusy(slug);
+    setMsg("");
+    try {
+      const res = await fetch("/api/admin/post-author", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, author }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "변경 실패");
+      setPosts((prev) => prev.map((p) => (p.slug === slug ? { ...p, author: author || null } : p)));
+      setMsg("작성자를 저장했어요.");
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "변경 중 오류가 발생했습니다.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function changeCategory(slug: string, category: string) {
     setBusy(slug);
     setMsg("");
@@ -75,6 +97,19 @@ export function AdminPostList({
             >
               {p.title}
             </a>
+
+            <input
+              type="text"
+              defaultValue={p.author || ""}
+              placeholder="작성자"
+              disabled={busy === p.slug}
+              onBlur={(e) => changeAuthor(p.slug, e.target.value.trim())}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+              }}
+              className="w-28 shrink-0 rounded-lg border border-line bg-white px-2 py-1.5 text-sm outline-none focus:border-accent"
+              aria-label="작성자"
+            />
 
             <select
               value={p.category || ""}

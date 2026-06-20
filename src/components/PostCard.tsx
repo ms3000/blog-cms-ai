@@ -40,8 +40,6 @@ export function PostCard({ post, priority = false }: { post: PostCardData; prior
             <span>{post.author || "WEDO"}</span>
             <span aria-hidden>·</span>
             <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
-            <span aria-hidden>·</span>
-            <span>{post.reading_minutes}분</span>
           </div>
         </div>
       </Link>
