@@ -14,8 +14,8 @@ html {
 body {
   background: #ffffff;
   color: #0f1115;
-  font-family: var(--font-sans), "Pretendard", -apple-system, BlinkMacSystemFont,
-    system-ui, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
