@@ -82,9 +82,15 @@ export default async function PostPage({ params }: { params: { slug: string } })
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
 
-      {/* 원본 HTML 의 스타일을 .post-content 스코프로 한정 주입 (원본 디자인 100% 보존) */}
+      {/* 원본 HTML 의 스타일을 .post-content 스코프로 한정 주입.
+          기본값(globals)보다 높은 specificity(.post-content.post-content)로 주입해
+          순서·레이어와 무관하게 각 글의 원본 디자인이 항상 우선 적용되도록 한다. */}
       {post.content_css && (
-        <style dangerouslySetInnerHTML={{ __html: scopeCss(post.content_css) }} />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: scopeCss(post.content_css, ".post-content.post-content"),
+          }}
+        />
       )}
 
       {/* breadcrumb */}

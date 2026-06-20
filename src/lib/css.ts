@@ -1,69 +1,66 @@
 /**
- * 업로드된 HTML 의 원본 <style> CSS 를 특정 스코프(.post-content) 안으로 한정시킨다.
- * - `body` / `html` 선택자는 스코프 루트로 치환
+ * 업로드된 HTML 의 원본 <style> CSS 를 특정 스코프 안으로 한정시킨다.
+ * - `@import` / `@charset` 같은 문장형 at-rule 은 (url() 내부의 ; 포함) 그대로 최상단 보존
+ * - `body` / `html` / `:root` 선택자는 스코프 루트로 치환
  * - 나머지 선택자는 스코프를 접두사로 붙임
- * - @media 등 중첩 at-rule 은 내부를 재귀적으로 스코프
- * - @import / @charset 같은 문장형 at-rule 은 최상단에 그대로 보존
+ * - `@media` 등 블록 at-rule 은 내부를 재귀적으로 스코프
+ *
+ * scope 를 `.post-content.post-content` 처럼 주면 specificity 가 높아져
+ * 전역 기본 CSS(.post-content ...) 를 항상 덮어쓴다.
  */
 export function scopeCss(css: string, scope = ".post-content"): string {
   if (!css) return "";
+
   // 주석 제거
   css = css.replace(/\/\*[\s\S]*?\*\//g, "");
 
+  // 문장형 at-rule(@import/@charset) 추출 — url() 안의 ; 까지 안전하게 포함
+  const statements: string[] = [];
+  css = css.replace(
+    /@(?:import|charset)\s+(?:url\([^)]*\)|"[^"]*"|'[^']*')[^;]*;/gi,
+    (m) => {
+      statements.push(m.trim());
+      return "";
+    }
+  );
+
+  const body = scopeBlock(css, scope);
+  return (statements.length ? statements.join("\n") + "\n" : "") + body;
+}
+
+function scopeBlock(css: string, scope: string): string {
   let out = "";
   let i = 0;
   const n = css.length;
 
   while (i < n) {
-    // 공백 스킵 (그대로 출력)
-    const ch = css[i];
-
-    if (ch === "@") {
-      // at-rule: 다음 '{' 또는 ';' 중 먼저 오는 것 찾기
-      const braceIdx = css.indexOf("{", i);
-      const semiIdx = css.indexOf(";", i);
-
-      // 문장형 at-rule (@import, @charset 등): ; 로 끝나고 블록 없음
-      if (semiIdx !== -1 && (braceIdx === -1 || semiIdx < braceIdx)) {
-        out += css.slice(i, semiIdx + 1) + "\n";
-        i = semiIdx + 1;
-        continue;
-      }
-
-      if (braceIdx === -1) {
-        out += css.slice(i);
-        break;
-      }
-      const prelude = css.slice(i, braceIdx).trim();
-      const end = matchBrace(css, braceIdx);
-      const inner = css.slice(braceIdx + 1, end);
-      out += prelude + "{" + scopeCss(inner, scope) + "}\n";
-      i = end + 1;
-      continue;
-    }
-
-    // 일반 규칙
     const braceIdx = css.indexOf("{", i);
     if (braceIdx === -1) {
       out += css.slice(i);
       break;
     }
-    const selectors = css.slice(i, braceIdx);
+
+    const prelude = css.slice(i, braceIdx);
     const end = matchBrace(css, braceIdx);
-    const body = css.slice(braceIdx + 1, end);
+    const inner = css.slice(braceIdx + 1, end);
 
-    const scoped = selectors
-      .split(",")
-      .map((sRaw) => {
-        const s = sRaw.trim();
-        if (!s) return "";
-        if (s === "body" || s === "html" || s === ":root") return scope;
-        return `${scope} ${s}`;
-      })
-      .filter(Boolean)
-      .join(", ");
-
-    out += `${scoped}{${body}}\n`;
+    const trimmed = prelude.trim();
+    if (trimmed.startsWith("@")) {
+      // 블록 at-rule (@media, @supports 등): 내부를 재귀 스코프
+      out += trimmed + "{" + scopeBlock(inner, scope) + "}\n";
+    } else {
+      const scoped = trimmed
+        .split(",")
+        .map((sRaw) => {
+          const s = sRaw.trim();
+          if (!s) return "";
+          if (s === "body" || s === "html" || s === ":root") return scope;
+          return `${scope} ${s}`;
+        })
+        .filter(Boolean)
+        .join(", ");
+      out += `${scoped}{${inner}}\n`;
+    }
     i = end + 1;
   }
 
