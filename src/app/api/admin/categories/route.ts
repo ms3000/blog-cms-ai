@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "인증이 필요합니다." }, { status: 401 });
   }
 
-  let body: { action?: string; id?: string; name?: string; dir?: string };
+  let body: { action?: string; id?: string; name?: string; dir?: string; description?: string };
   try {
     body = await req.json();
   } catch {
@@ -50,6 +50,15 @@ export async function POST(req: Request) {
       if (cur?.name && cur.name !== name) {
         await admin.from("posts").update({ category: name }).eq("category", cur.name);
       }
+    } else if (action === "describe") {
+      const id = String(body.id || "");
+      if (!id) throw new Error("id가 없습니다.");
+      const description = String(body.description ?? "").trim();
+      const { error } = await admin
+        .from("categories")
+        .update({ description: description || null })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
     } else if (action === "delete") {
       const id = String(body.id || "");
       if (!id) throw new Error("id가 없습니다.");

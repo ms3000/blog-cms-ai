@@ -6,6 +6,7 @@ export type ManagedCategory = {
   name: string;
   slug: string;
   sort_order: number;
+  description: string | null;
 };
 
 export type MenuCategory = { name: string; count: number };
@@ -14,11 +15,24 @@ export async function getManagedCategories(): Promise<ManagedCategory[]> {
   const sb = createPublicClient();
   const { data, error } = await sb
     .from("categories")
-    .select("id, name, slug, sort_order")
+    .select("id, name, slug, sort_order, description")
     .order("sort_order", { ascending: true })
     .order("name", { ascending: true });
   if (error) return [];
   return (data ?? []) as ManagedCategory[];
+}
+
+/** 카테고리명으로 단건 조회 (설명 표시용) */
+export async function getCategoryByName(
+  name: string
+): Promise<{ name: string; description: string | null } | null> {
+  const sb = createPublicClient();
+  const { data } = await sb
+    .from("categories")
+    .select("name, description")
+    .eq("name", name)
+    .maybeSingle();
+  return (data as { name: string; description: string | null }) ?? null;
 }
 
 /** 글 수를 카테고리명 기준으로 집계 */

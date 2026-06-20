@@ -70,6 +70,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
   const jsonLd = buildJsonLd(post, tags);
   const breadcrumb = buildBreadcrumb(post);
+  const cardW = cardWidthFromCss(post.content_css);
 
   return (
     <>
@@ -93,23 +94,26 @@ export default async function PostPage({ params }: { params: { slug: string } })
         />
       )}
 
-      {/* breadcrumb */}
-      <div className="mx-auto max-w-content px-5 pt-8">
-        <nav className="flex items-center gap-1.5 text-sm text-ink-faint" aria-label="breadcrumb">
-          <Link href="/" className="hover:text-ink">홈</Link>
-          <span aria-hidden>/</span>
+      {/* breadcrumb — 카드 폭에 맞춰 정렬, 한 줄 유지(긴 제목 … 축약) */}
+      <div className="mx-auto px-5 pt-8" style={{ maxWidth: cardW }}>
+        <nav
+          className="flex items-center gap-1.5 overflow-hidden whitespace-nowrap text-sm text-ink-faint"
+          aria-label="breadcrumb"
+        >
+          <Link href="/" className="shrink-0 hover:text-ink">홈</Link>
+          <span aria-hidden className="shrink-0">/</span>
           {post.category ? (
             <>
               <Link
                 href={`/category/${encodeURIComponent(post.category)}`}
-                className="hover:text-ink"
+                className="shrink-0 hover:text-ink"
               >
                 {post.category}
               </Link>
-              <span aria-hidden>/</span>
+              <span aria-hidden className="shrink-0">/</span>
             </>
           ) : null}
-          <span className="text-ink-soft line-clamp-1">{post.title}</span>
+          <span className="min-w-0 flex-1 truncate text-ink-soft">{post.title}</span>
         </nav>
       </div>
 
@@ -123,8 +127,8 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
       {/* 태그 링크 */}
       {tags.length > 0 && (
-        <div className="mx-auto max-w-content px-5 pt-10">
-          <div className="mx-auto flex max-w-[670px] flex-wrap gap-2">
+        <div className="mx-auto px-5 pt-10" style={{ maxWidth: cardW }}>
+          <div className="flex flex-wrap gap-2">
             {tags.map((t) => (
               <Link
                 key={t.id}
@@ -155,4 +159,13 @@ export default async function PostPage({ params }: { params: { slug: string } })
       </div>
     </>
   );
+}
+
+/** 원본 CSS 의 .bp-card max-width 를 읽어 브레드크럼/태그 폭을 본문 카드와 맞춘다. */
+function cardWidthFromCss(css: string | null): number {
+  const DEFAULT = 670;
+  if (!css) return DEFAULT;
+  const m = /\.bp-card\s*\{[^}]*max-width\s*:\s*(\d+)px/.exec(css);
+  const w = m ? Number(m[1]) : DEFAULT;
+  return w >= 320 && w <= 1200 ? w : DEFAULT;
 }

@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Category = { id: string; name: string; slug: string; sort_order: number };
+type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+  description: string | null;
+};
 
 export function AdminCategories({ initial }: { initial: Category[] }) {
   const router = useRouter();
@@ -11,6 +17,8 @@ export function AdminCategories({ initial }: { initial: Category[] }) {
   const [newName, setNewName] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [editing, setEditing] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
 
   async function call(payload: Record<string, unknown>) {
     setBusy(true);
@@ -37,7 +45,10 @@ export function AdminCategories({ initial }: { initial: Category[] }) {
     const name = newName.trim();
     if (!name) return;
     if (await call({ action: "create", name })) {
-      setCats((c) => [...c, { id: `tmp-${Date.now()}`, name, slug: name, sort_order: c.length + 1 }]);
+      setCats((c) => [
+        ...c,
+        { id: `tmp-${Date.now()}`, name, slug: name, sort_order: c.length + 1, description: null },
+      ]);
       setNewName("");
     }
   }
@@ -70,11 +81,23 @@ export function AdminCategories({ initial }: { initial: Category[] }) {
     }
   }
 
+  function startEdit(c: Category) {
+    setEditing(c.id);
+    setDraft(c.description || "");
+  }
+
+  async function saveDesc(id: string) {
+    if (await call({ action: "describe", id, description: draft })) {
+      setCats((c) => c.map((x) => (x.id === id ? { ...x, description: draft.trim() || null } : x)));
+      setEditing(null);
+    }
+  }
+
   return (
     <div className="rounded-2xl border border-line p-5">
       <h2 className="text-lg font-bold">카테고리 관리</h2>
       <p className="mt-1 text-sm text-ink-muted">
-        사이드바 메뉴에 보이는 카테고리입니다. 순서를 바꾸거나 이름을 수정/삭제할 수 있어요.
+        사이드바 메뉴 카테고리입니다. 순서·이름·삭제와 함께 <b>카테고리 설명</b>을 넣으면 해당 카테고리 페이지 상단에 표시돼요.
       </p>
 
       <div className="mt-4 flex gap-2">
@@ -99,38 +122,33 @@ export function AdminCategories({ initial }: { initial: Category[] }) {
       <ul className="mt-4 divide-y divide-line rounded-xl border border-line">
         {cats.length === 0 && <li className="px-4 py-3 text-sm text-ink-muted">카테고리가 없습니다.</li>}
         {cats.map((c, i) => (
-          <li key={c.id} className="flex items-center gap-2 px-4 py-2.5">
-            <span className="flex-1 font-medium">{c.name}</span>
-            <button
-              onClick={() => move(c.id, "up")}
-              disabled={busy || i === 0}
-              className="rounded-md border border-line px-2 py-1 text-xs disabled:opacity-30"
-              aria-label="위로"
-            >
-              ↑
-            </button>
-            <button
-              onClick={() => move(c.id, "down")}
-              disabled={busy || i === cats.length - 1}
-              className="rounded-md border border-line px-2 py-1 text-xs disabled:opacity-30"
-              aria-label="아래로"
-            >
-              ↓
-            </button>
-            <button
-              onClick={() => rename(c.id, c.name)}
-              disabled={busy}
-              className="rounded-md border border-line px-2.5 py-1 text-xs hover:bg-surface"
-            >
-              이름변경
-            </button>
-            <button
-              onClick={() => del(c.id, c.name)}
-              disabled={busy}
-              className="rounded-md border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50"
-            >
-              삭제
-            </button>
+          <li key={c.id} className="px-4 py-2.5">
+            <div className="flex items-center gap-2">
+              <span className="flex-1 truncate font-medium">{c.name}</span>
+              <button onClick={() => move(c.id, "up")} disabled={busy || i === 0} className="rounded-md border border-line px-2 py-1 text-xs disabled:opacity-30" aria-label="위로">↑</button>
+              <button onClick={() => move(c.id, "down")} disabled={busy || i === cats.length - 1} className="rounded-md border border-line px-2 py-1 text-xs disabled:opacity-30" aria-label="아래로">↓</button>
+              <button onClick={() => (editing === c.id ? setEditing(null) : startEdit(c))} disabled={busy} className="rounded-md border border-line px-2.5 py-1 text-xs hover:bg-surface">설명</button>
+              <button onClick={() => rename(c.id, c.name)} disabled={busy} className="rounded-md border border-line px-2.5 py-1 text-xs hover:bg-surface">이름변경</button>
+              <button onClick={() => del(c.id, c.name)} disabled={busy} className="rounded-md border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50">삭제</button>
+            </div>
+
+            {editing === c.id ? (
+              <div className="mt-2">
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  rows={3}
+                  placeholder="이 카테고리에 대한 설명을 입력하세요. (줄바꿈 가능)"
+                  className="w-full resize-y rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-accent"
+                />
+                <div className="mt-1.5 flex gap-2">
+                  <button onClick={() => saveDesc(c.id)} disabled={busy} className="rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-white">저장</button>
+                  <button onClick={() => setEditing(null)} className="rounded-lg border border-line px-3 py-1.5 text-xs">취소</button>
+                </div>
+              </div>
+            ) : (
+              c.description && <p className="mt-1 line-clamp-2 text-xs text-ink-muted">{c.description}</p>
+            )}
           </li>
         ))}
       </ul>
