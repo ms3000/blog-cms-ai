@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { site, absUrl } from "@/lib/site";
-import { Header } from "@/components/Header";
+import { SiteNav } from "@/components/SiteNav";
 import { Footer } from "@/components/Footer";
+import { getCategories } from "@/lib/posts";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -38,7 +39,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const categories = await getCategories().catch(() => []);
+  const brand = { name: site.name, logoUrl: null as string | null };
+
   return (
     <html lang="ko">
       <head>
@@ -54,10 +58,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-white text-ink antialiased">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+      <body className="min-h-screen bg-white text-ink antialiased">
+        <SiteNav categories={categories} brand={brand} />
+        <div className="flex min-h-screen flex-col lg:pl-64">
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   );
