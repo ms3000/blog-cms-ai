@@ -2,15 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 type Category = { name: string; count: number };
 type Brand = { name: string; logoUrl: string | null };
 
 export function SiteNav({ categories, brand }: { categories: Category[]; brand: Brand }) {
   const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const router = useRouter();
   const pathname = usePathname() || "/";
   const current = safeDecode(pathname);
+
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const term = q.trim();
+    if (!term) return;
+    setOpen(false);
+    router.push(`/search?q=${encodeURIComponent(term)}`);
+  }
 
   const isHome = current === "/";
   const isActiveCategory = (name: string) => current === `/category/${name}`;
@@ -56,6 +66,26 @@ export function SiteNav({ categories, brand }: { categories: Category[]; brand: 
       >
         전체 글
       </Link>
+
+      {/* 기사 검색 — 전체 글 바로 아래 */}
+      <form onSubmit={submitSearch} className="mt-2 px-1">
+        <div className="relative">
+          <svg
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint"
+            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="기사 검색"
+            aria-label="기사 검색"
+            className="w-full rounded-lg border border-line bg-surface py-2 pl-9 pr-3 text-sm outline-none transition focus:border-accent focus:bg-white"
+          />
+        </div>
+      </form>
     </nav>
   );
 

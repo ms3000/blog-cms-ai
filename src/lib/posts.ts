@@ -38,6 +38,21 @@ export async function countPosts(category?: string): Promise<number> {
   return count ?? 0;
 }
 
+export async function searchPosts(query: string): Promise<PostCardData[]> {
+  const term = (query || "").replace(/[%,()*]/g, " ").trim();
+  if (!term) return [];
+  const sb = createPublicClient();
+  const { data, error } = await sb
+    .from("posts")
+    .select(CARD_FIELDS)
+    .eq("status", "published")
+    .or(`title.ilike.%${term}%,excerpt.ilike.%${term}%,keywords.ilike.%${term}%`)
+    .order("published_at", { ascending: false })
+    .limit(50);
+  if (error) throw error;
+  return (data ?? []) as PostCardData[];
+}
+
 export async function getPostBySlug(slug: string): Promise<Post | null> {
   const sb = createPublicClient();
   const { data, error } = await sb
