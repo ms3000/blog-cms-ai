@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getPosts, getCategories } from "@/lib/posts";
+import { getPosts } from "@/lib/posts";
+import { getMenuCategories } from "@/lib/categories";
 import { PostGrid } from "@/components/PostGrid";
 import { Newsletter } from "@/components/Newsletter";
 
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 export default async function BlogIndex() {
   const [posts, categories] = await Promise.all([
     getPosts().catch(() => []),
-    getCategories().catch(() => []),
+    getMenuCategories().catch(() => []),
   ]);
 
   return (

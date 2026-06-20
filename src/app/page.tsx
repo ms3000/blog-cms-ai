@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getPosts, getCategories } from "@/lib/posts";
+import { getPosts } from "@/lib/posts";
+import { getMenuCategories } from "@/lib/categories";
 import { PostCard } from "@/components/PostCard";
 import { Newsletter } from "@/components/Newsletter";
 import { formatDate } from "@/lib/format";
@@ -9,7 +10,7 @@ export const revalidate = 60;
 export default async function HomePage() {
   const [posts, categories] = await Promise.all([
     getPosts({ limit: 13 }).catch(() => []),
-    getCategories().catch(() => []),
+    getMenuCategories().catch(() => []),
   ]);
 
   if (posts.length === 0) {

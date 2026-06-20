@@ -3,7 +3,8 @@ import "./globals.css";
 import { site, absUrl } from "@/lib/site";
 import { SiteNav } from "@/components/SiteNav";
 import { Footer } from "@/components/Footer";
-import { getCategories } from "@/lib/posts";
+import { getMenuCategories } from "@/lib/categories";
+import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -40,8 +41,11 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const categories = await getCategories().catch(() => []);
-  const brand = { name: site.name, logoUrl: null as string | null };
+  const [categories, settings] = await Promise.all([
+    getMenuCategories().catch(() => []),
+    getSettings(),
+  ]);
+  const brand = { name: settings.siteName, logoUrl: settings.logoUrl };
 
   return (
     <html lang="ko">

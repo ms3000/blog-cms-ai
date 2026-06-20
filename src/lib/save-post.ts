@@ -63,6 +63,9 @@ export async function savePostFromHtml(html: string): Promise<SaveResult> {
   // 태그 연결
   await linkTags(admin, inserted.id, parsed.tags);
 
+  // 카테고리를 관리 목록에 자동 등록
+  if (parsed.category) await ensureCategory(admin, parsed.category);
+
   return {
     id: inserted.id,
     slug: inserted.slug,
@@ -70,6 +73,31 @@ export async function savePostFromHtml(html: string): Promise<SaveResult> {
     tags: parsed.tags,
     imageCount,
   };
+}
+
+/** 카테고리명을 categories 테이블에 없으면 추가 (맨 뒤 순서로) */
+export async function ensureCategory(
+  admin: ReturnType<typeof createAdminClient>,
+  name: string
+): Promise<void> {
+  const clean = name.trim();
+  if (!clean) return;
+  const { data: existing } = await admin
+    .from("categories")
+    .select("id")
+    .eq("name", clean)
+    .maybeSingle();
+  if (existing) return;
+  const { data: last } = await admin
+    .from("categories")
+    .select("sort_order")
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const nextOrder = ((last?.sort_order as number) ?? 0) + 1;
+  await admin
+    .from("categories")
+    .insert({ name: clean, slug: slugify(clean) || clean, sort_order: nextOrder });
 }
 
 async function ensureUniqueSlug(

@@ -2,7 +2,11 @@ import { isAuthed } from "@/lib/auth";
 import { loginAction, logoutAction } from "./actions";
 import { AdminUploader } from "@/components/AdminUploader";
 import { AdminPostList } from "@/components/AdminPostList";
+import { AdminSettings } from "@/components/AdminSettings";
+import { AdminCategories } from "@/components/AdminCategories";
 import { getPosts } from "@/lib/posts";
+import { getSettings } from "@/lib/settings";
+import { getManagedCategories } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -43,12 +47,17 @@ export default async function AdminPage({
     );
   }
 
-  const recent = await getPosts({ limit: 50 }).catch(() => []);
+  const [recent, settings, managed] = await Promise.all([
+    getPosts({ limit: 50 }).catch(() => []),
+    getSettings(),
+    getManagedCategories().catch(() => []),
+  ]);
+  const categoryNames = managed.map((c) => c.name);
 
   return (
     <div className="mx-auto max-w-content px-5 py-12">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-extrabold tracking-tight">콘텐츠 업로드</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight">관리자</h1>
         <form action={logoutAction}>
           <button className="text-sm text-ink-muted hover:text-ink">로그아웃</button>
         </form>
@@ -61,9 +70,14 @@ export default async function AdminPage({
         <AdminUploader />
       </div>
 
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <AdminSettings initialName={settings.siteName} initialLogo={settings.logoUrl} />
+        <AdminCategories initial={managed} />
+      </div>
+
       <div className="mt-14">
         <h2 className="mb-4 text-lg font-bold">최근 게시글</h2>
-        <AdminPostList initialPosts={recent} />
+        <AdminPostList initialPosts={recent} categories={categoryNames} />
       </div>
     </div>
   );
