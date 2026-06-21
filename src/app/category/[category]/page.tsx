@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { getPosts, getCategories } from "@/lib/posts";
+import { getPosts, getCategories, countPosts } from "@/lib/posts";
 import { getCategoryByName } from "@/lib/categories";
 import { PostGrid } from "@/components/PostGrid";
+import { Pagination } from "@/components/Pagination";
 import { Newsletter } from "@/components/Newsletter";
 import { absUrl, site } from "@/lib/site";
+
+const PAGE_SIZE = 12;
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -30,12 +33,21 @@ export async function generateMetadata({
   };
 }
 
-export default async function CategoryPage({ params }: { params: { category: string } }) {
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: { category: string };
+  searchParams: { page?: string };
+}) {
   const category = decodeURIComponent(params.category);
-  const [posts, meta] = await Promise.all([
-    getPosts({ category }).catch(() => []),
+  const page = Math.max(1, Number(searchParams.page) || 1);
+  const [posts, total, meta] = await Promise.all([
+    getPosts({ category, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE }).catch(() => []),
+    countPosts(category).catch(() => 0),
     getCategoryByName(category).catch(() => null),
   ]);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <>
@@ -47,10 +59,15 @@ export default async function CategoryPage({ params }: { params: { category: str
             {meta.description}
           </p>
         )}
-        <p className="mt-4 text-sm text-ink-muted">{posts.length}개의 글</p>
+        <p className="mt-4 text-sm text-ink-muted">{total}개의 글</p>
       </section>
       <section className="mx-auto max-w-content px-5 pt-10">
         <PostGrid posts={posts} />
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          basePath={`/category/${encodeURIComponent(category)}`}
+        />
       </section>
       <div className="pt-24">
         <Newsletter />
