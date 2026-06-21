@@ -100,6 +100,59 @@ export async function ensureCategory(
     .insert({ name: clean, slug: slugify(clean) || clean, sort_order: nextOrder });
 }
 
+/** 기존 글(slug 유지)의 본문을 새 HTML 로 교체. 이미지·태그·구조화데이터 재처리. */
+export async function replacePostHtml(slug: string, html: string): Promise<SaveResult> {
+  const admin = createAdminClient();
+
+  const { data: existing, error: findErr } = await admin
+    .from("posts")
+    .select("id, category, author")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (findErr) throw new Error(`조회 실패: ${findErr.message}`);
+  if (!existing) throw new Error("글을 찾을 수 없습니다.");
+
+  let imageCount = 0;
+  const uploadImage = async (img: ParsedImage): Promise<string> => {
+    const path = `images/${img.hash}.${img.ext}`;
+    const contentType = `image/${img.ext === "jpg" ? "jpeg" : img.ext}`;
+    const { error } = await admin.storage
+      .from(BUCKET)
+      .upload(path, img.buffer, { contentType, upsert: true, cacheControl: "31536000" });
+    if (error && !/exists/i.test(error.message)) throw new Error(`이미지 업로드 실패: ${error.message}`);
+    imageCount++;
+    return admin.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  };
+
+  const parsed = await ingestHtml(html, uploadImage);
+
+  const { error: upErr } = await admin
+    .from("posts")
+    .update({
+      title: parsed.title,
+      seo_title: parsed.seo_title,
+      excerpt: parsed.excerpt,
+      keywords: parsed.keywords,
+      cover_url: parsed.cover_url,
+      cover_alt: parsed.cover_alt,
+      content_html: parsed.content_html,
+      content_css: parsed.content_css,
+      json_ld: parsed.json_ld,
+      has_faq: parsed.has_faq,
+      has_howto: parsed.has_howto,
+      reading_minutes: parsed.reading_minutes,
+      // category/author 는 사용자가 지정한 값 유지
+    })
+    .eq("id", existing.id);
+  if (upErr) throw new Error(`본문 교체 실패: ${upErr.message}`);
+
+  // 태그 재연결 (기존 태그 링크 제거 후 새로)
+  await admin.from("post_tags").delete().eq("post_id", existing.id);
+  await linkTags(admin, existing.id, parsed.tags);
+
+  return { id: existing.id, slug, title: parsed.title, tags: parsed.tags, imageCount };
+}
+
 async function ensureUniqueSlug(
   admin: ReturnType<typeof createAdminClient>,
   base: string
