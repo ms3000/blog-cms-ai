@@ -16,6 +16,7 @@ export type Post = {
   has_faq: boolean;
   has_howto: boolean;
   reading_minutes: number;
+  view_count: number;
   status: string;
   published_at: string;
   updated_at: string;
@@ -34,6 +35,7 @@ export type PostCardData = Pick<
   | "author"
   | "published_at"
   | "reading_minutes"
+  | "view_count"
 >;
 
 export type Tag = {

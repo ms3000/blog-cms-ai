@@ -4,6 +4,7 @@ import { site, absUrl } from "@/lib/site";
 import { SiteNav } from "@/components/SiteNav";
 import { Footer } from "@/components/Footer";
 import { getMenuCategories } from "@/lib/categories";
+import { getPopularPosts } from "@/lib/posts";
 import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
@@ -41,11 +42,13 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [categories, settings] = await Promise.all([
+  const [categories, settings, popular] = await Promise.all([
     getMenuCategories().catch(() => []),
     getSettings(),
+    getPopularPosts(5).catch(() => []),
   ]);
   const brand = { name: settings.siteName, logoUrl: settings.logoUrl };
+  const popularItems = popular.map((p) => ({ slug: p.slug, title: p.title }));
 
   return (
     <html lang="ko">
@@ -63,7 +66,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="min-h-screen bg-white text-ink antialiased">
-        <SiteNav categories={categories} brand={brand} />
+        <SiteNav categories={categories} brand={brand} popular={popularItems} />
         <div className="flex min-h-screen flex-col lg:pl-64">
           <main className="flex-1">{children}</main>
           <Footer />

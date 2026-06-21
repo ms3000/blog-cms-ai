@@ -6,8 +6,17 @@ import { usePathname, useRouter } from "next/navigation";
 
 type Category = { name: string; count: number };
 type Brand = { name: string; logoUrl: string | null };
+type PopularItem = { slug: string; title: string };
 
-export function SiteNav({ categories, brand }: { categories: Category[]; brand: Brand }) {
+export function SiteNav({
+  categories,
+  brand,
+  popular = [],
+}: {
+  categories: Category[];
+  brand: Brand;
+  popular?: PopularItem[];
+}) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const router = useRouter();
@@ -98,6 +107,28 @@ export function SiteNav({ categories, brand }: { categories: Category[]; brand: 
           블로그
         </div>
         {NavLinks}
+
+        {popular.length > 0 && (
+          <div className="mt-8">
+            <div className="mb-2 px-3 text-xs font-bold uppercase tracking-wider text-ink-faint">
+              인기 글
+            </div>
+            <ol className="space-y-1">
+              {popular.map((p, i) => (
+                <li key={p.slug}>
+                  <Link
+                    href={`/blog/${p.slug}`}
+                    className="flex gap-2 rounded-lg px-3 py-1.5 text-sm text-ink-soft transition hover:bg-surface hover:text-ink"
+                  >
+                    <span className="font-bold text-accent">{i + 1}</span>
+                    <span className="line-clamp-2">{p.title}</span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+
         <div className="mt-auto pt-6 text-xs text-ink-faint">
           © {new Date().getFullYear()} {brand.name}
         </div>

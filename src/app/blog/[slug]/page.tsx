@@ -11,6 +11,7 @@ import { PostCard } from "@/components/PostCard";
 import { Newsletter } from "@/components/Newsletter";
 import { TableOfContents } from "@/components/TableOfContents";
 import { ShareButtons } from "@/components/ShareButtons";
+import { ViewTracker } from "@/components/ViewTracker";
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -155,10 +156,13 @@ export default async function PostPage({ params }: { params: { slug: string } })
         </div>
       )}
 
-      {/* 공유 */}
+      <ViewTracker slug={post.slug} />
+
+      {/* 공유 + 조회수 */}
       <div className="mx-auto px-5 pt-8" style={{ maxWidth: cardW }}>
-        <div className="border-t border-line pt-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6">
           <ShareButtons url={absUrl(`/blog/${post.slug}`)} title={post.title} />
+          <span className="text-sm text-ink-faint">조회 {(post.view_count ?? 0).toLocaleString()}</span>
         </div>
       </div>
 

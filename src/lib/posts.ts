@@ -2,7 +2,20 @@ import { createPublicClient } from "@/lib/supabase/server";
 import type { Post, PostCardData, Tag } from "@/lib/types";
 
 const CARD_FIELDS =
-  "slug,title,excerpt,cover_url,cover_alt,category,author,published_at,reading_minutes";
+  "slug,title,excerpt,cover_url,cover_alt,category,author,published_at,reading_minutes,view_count";
+
+export async function getPopularPosts(limit = 5): Promise<PostCardData[]> {
+  const sb = createPublicClient();
+  const { data, error } = await sb
+    .from("posts")
+    .select(CARD_FIELDS)
+    .eq("status", "published")
+    .order("view_count", { ascending: false })
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as PostCardData[];
+}
 
 export async function getPosts(opts?: {
   limit?: number;
