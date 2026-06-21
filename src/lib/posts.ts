@@ -65,6 +65,37 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   return (data as Post) ?? null;
 }
 
+/** 발행일 기준 이전(과거)·다음(최신) 글 */
+export async function getAdjacentPosts(
+  publishedAt: string,
+  slug: string
+): Promise<{ prev: PostCardData | null; next: PostCardData | null }> {
+  const sb = createPublicClient();
+  const [{ data: prevData }, { data: nextData }] = await Promise.all([
+    sb
+      .from("posts")
+      .select(CARD_FIELDS)
+      .eq("status", "published")
+      .lt("published_at", publishedAt)
+      .order("published_at", { ascending: false })
+      .limit(1),
+    sb
+      .from("posts")
+      .select(CARD_FIELDS)
+      .eq("status", "published")
+      .gt("published_at", publishedAt)
+      .order("published_at", { ascending: true })
+      .limit(1),
+  ]);
+  const prev = ((prevData ?? [])[0] as PostCardData) || null;
+  const next = ((nextData ?? [])[0] as PostCardData) || null;
+  // 동일 슬러그 방지
+  return {
+    prev: prev && prev.slug !== slug ? prev : null,
+    next: next && next.slug !== slug ? next : null,
+  };
+}
+
 export async function getAllSlugs(): Promise<string[]> {
   const sb = createPublicClient();
   const { data, error } = await sb

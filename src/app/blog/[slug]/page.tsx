@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPostBySlug, getAllSlugs, getTagsForPost, getPosts } from "@/lib/posts";
+import { getPostBySlug, getAllSlugs, getTagsForPost, getPosts, getAdjacentPosts } from "@/lib/posts";
 import { buildJsonLd, buildBreadcrumb } from "@/lib/seo";
 import { scopeCss } from "@/lib/css";
+import { addHeadingIds } from "@/lib/toc";
 import { absUrl, site } from "@/lib/site";
 import { formatDate } from "@/lib/format";
 import { PostCard } from "@/components/PostCard";
 import { Newsletter } from "@/components/Newsletter";
+import { TableOfContents } from "@/components/TableOfContents";
+import { ShareButtons } from "@/components/ShareButtons";
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -63,14 +66,17 @@ export default async function PostPage({ params }: { params: { slug: string } })
   const post = await getPostBySlug(slug).catch(() => null);
   if (!post) notFound();
 
-  const tags = await getTagsForPost(post.id).catch(() => []);
-  const related = (await getPosts({ limit: 4, category: post.category || undefined }).catch(() => []))
-    .filter((p) => p.slug !== post.slug)
-    .slice(0, 3);
+  const [tags, relatedRaw, adjacent] = await Promise.all([
+    getTagsForPost(post.id).catch(() => []),
+    getPosts({ limit: 4, category: post.category || undefined }).catch(() => []),
+    getAdjacentPosts(post.published_at, post.slug).catch(() => ({ prev: null, next: null })),
+  ]);
+  const related = relatedRaw.filter((p) => p.slug !== post.slug).slice(0, 3);
 
   const jsonLd = buildJsonLd(post, tags);
   const breadcrumb = buildBreadcrumb(post);
   const cardW = cardWidthFromCss(post.content_css);
+  const { html: contentHtml, toc } = addHeadingIds(post.content_html);
 
   return (
     <>
@@ -117,11 +123,18 @@ export default async function PostPage({ params }: { params: { slug: string } })
         </nav>
       </div>
 
+      {/* 목차 */}
+      {toc.length >= 2 && (
+        <div className="mx-auto px-5 pt-6" style={{ maxWidth: cardW }}>
+          <TableOfContents items={toc} />
+        </div>
+      )}
+
       {/* 본문 — 원본의 "회색 배경 위 흰 카드" 디자인을 그대로 재현 */}
       <section className="post-stage mt-6 w-full">
         <div
           className="post-content"
-          dangerouslySetInnerHTML={{ __html: post.content_html }}
+          dangerouslySetInnerHTML={{ __html: contentHtml }}
         />
       </section>
 
@@ -140,6 +153,47 @@ export default async function PostPage({ params }: { params: { slug: string } })
             ))}
           </div>
         </div>
+      )}
+
+      {/* 공유 */}
+      <div className="mx-auto px-5 pt-8" style={{ maxWidth: cardW }}>
+        <div className="border-t border-line pt-6">
+          <ShareButtons url={absUrl(`/blog/${post.slug}`)} title={post.title} />
+        </div>
+      </div>
+
+      {/* 이전 / 다음 글 */}
+      {(adjacent.prev || adjacent.next) && (
+        <nav className="mx-auto px-5 pt-8" style={{ maxWidth: cardW }} aria-label="이전 다음 글">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {adjacent.prev ? (
+              <Link
+                href={`/blog/${adjacent.prev.slug}`}
+                className="group rounded-2xl border border-line p-4 transition hover:border-ink"
+              >
+                <div className="text-xs text-ink-faint">← 이전 글</div>
+                <div className="mt-1 font-semibold leading-snug line-clamp-2 group-hover:text-accent">
+                  {adjacent.prev.title}
+                </div>
+              </Link>
+            ) : (
+              <span />
+            )}
+            {adjacent.next ? (
+              <Link
+                href={`/blog/${adjacent.next.slug}`}
+                className="group rounded-2xl border border-line p-4 text-right transition hover:border-ink"
+              >
+                <div className="text-xs text-ink-faint">다음 글 →</div>
+                <div className="mt-1 font-semibold leading-snug line-clamp-2 group-hover:text-accent">
+                  {adjacent.next.title}
+                </div>
+              </Link>
+            ) : (
+              <span />
+            )}
+          </div>
+        </nav>
       )}
 
       {/* 관련 글 */}
