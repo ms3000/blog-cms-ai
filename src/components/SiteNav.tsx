@@ -100,8 +100,8 @@ export function SiteNav({
 
   return (
     <>
-      {/* ===== Desktop: 고정 좌측 사이드바 ===== */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-line bg-white px-5 py-7 lg:flex">
+      {/* ===== Desktop: 좌측 사이드바 (본문과 함께 중앙 그룹) ===== */}
+      <aside className="sticky top-0 z-40 hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-line bg-white px-5 py-7 lg:flex">
         <div className="mb-8">{Logo}</div>
         <div className="mb-3 px-3 text-xs font-bold uppercase tracking-wider text-ink-faint">
           블로그
