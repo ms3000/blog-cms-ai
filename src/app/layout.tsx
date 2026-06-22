@@ -65,15 +65,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
         />
       </head>
-      <body className="min-h-screen bg-white text-ink antialiased">
+      <body className="flex min-h-screen flex-col bg-white text-ink antialiased">
         {/* 사이드바 + 본문을 하나의 그룹으로 묶어 화면 중앙에 배치 */}
-        <div className="mx-auto block w-full max-w-[1440px] lg:flex">
+        <div className="mx-auto block w-full max-w-[1440px] flex-1 lg:flex">
           <SiteNav categories={categories} brand={brand} popular={popularItems} />
-          <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          <main className="min-w-0 flex-1">{children}</main>
         </div>
+        {/* Footer 는 그룹 밖 — 배경이 화면 전체 폭으로 이어짐 */}
+        <Footer />
       </body>
     </html>
   );
