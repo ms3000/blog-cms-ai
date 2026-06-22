@@ -68,7 +68,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-screen bg-white text-ink antialiased">
         <SiteNav categories={categories} brand={brand} popular={popularItems} />
         <div className="flex min-h-screen flex-col lg:pl-64">
-          <main className="flex-1">{children}</main>
+          {/* 본문을 사이드바에 붙여 왼쪽 정렬(가운데 정렬 아님) */}
+          <main className="w-full max-w-content flex-1">{children}</main>
           <Footer />
         </div>
       </body>
