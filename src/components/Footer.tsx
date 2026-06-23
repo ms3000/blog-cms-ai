@@ -1,18 +1,30 @@
 import Link from "next/link";
-import { site } from "@/lib/site";
+import { getSettings } from "@/lib/settings";
 
-export function Footer() {
+export async function Footer() {
+  const { siteName, logoUrl, footerDescription, copyright } = await getSettings();
   const year = new Date().getFullYear();
+  const copyrightText = copyright || `© ${year} ${siteName}. All rights reserved.`;
+
   return (
     <footer className="mt-24 border-t border-line bg-surface">
       <div className="mx-auto max-w-content px-5 py-14">
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="max-w-sm">
             <div className="flex items-center gap-2 font-extrabold text-lg">
-              <span className="inline-block h-5 w-5 rounded-md bg-accent" aria-hidden />
-              {site.name}
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt={siteName} className="h-6 w-auto max-w-[150px] object-contain" />
+              ) : (
+                <>
+                  <span className="inline-block h-5 w-5 rounded-md bg-accent" aria-hidden />
+                  {siteName}
+                </>
+              )}
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-ink-muted">{site.description}</p>
+            <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-ink-muted">
+              {footerDescription}
+            </p>
           </div>
 
           <div className="flex gap-16 text-sm">
@@ -34,7 +46,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 border-t border-line pt-6 text-xs text-ink-faint">
-          © {year} {site.name}. All rights reserved.
+          {copyrightText}
         </div>
       </div>
     </footer>

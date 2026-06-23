@@ -12,10 +12,12 @@ export function SiteNav({
   categories,
   brand,
   popular = [],
+  copyright,
 }: {
   categories: Category[];
   brand: Brand;
   popular?: PopularItem[];
+  copyright?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -130,7 +132,7 @@ export function SiteNav({
         )}
 
         <div className="mt-auto pt-6 text-xs text-ink-faint">
-          © {new Date().getFullYear()} {brand.name}
+          {copyright || `© ${new Date().getFullYear()} ${brand.name}`}
         </div>
       </aside>
 

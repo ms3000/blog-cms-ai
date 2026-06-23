@@ -5,11 +5,17 @@ import { useRef, useState } from "react";
 export function AdminSettings({
   initialName,
   initialLogo,
+  initialFooterDescription,
+  initialCopyright,
 }: {
   initialName: string;
   initialLogo: string | null;
+  initialFooterDescription: string;
+  initialCopyright: string;
 }) {
   const [name, setName] = useState(initialName);
+  const [footerDesc, setFooterDesc] = useState(initialFooterDescription);
+  const [copyright, setCopyright] = useState(initialCopyright);
   const [logo, setLogo] = useState<string | null>(initialLogo);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -23,6 +29,8 @@ export function AdminSettings({
     try {
       const fd = new FormData();
       fd.append("site_name", name);
+      fd.append("footer_description", footerDesc);
+      fd.append("copyright", copyright);
       if (file) fd.append("logo", file);
       const res = await fetch("/api/admin/settings", { method: "POST", body: fd });
       const data = await res.json();
@@ -116,6 +124,27 @@ export function AdminSettings({
             placeholder="사이트 이름"
           />
         </div>
+      </div>
+
+      <div className="mt-4">
+        <label className="mb-2 block text-sm font-medium">푸터 소개 문구</label>
+        <textarea
+          value={footerDesc}
+          onChange={(e) => setFooterDesc(e.target.value)}
+          rows={2}
+          className="w-full resize-y rounded-xl border border-line px-4 py-2.5 outline-none focus:border-accent"
+          placeholder="푸터 로고 아래에 표시될 소개 문구"
+        />
+      </div>
+
+      <div className="mt-4">
+        <label className="mb-2 block text-sm font-medium">저작권(Copyright)</label>
+        <input
+          value={copyright}
+          onChange={(e) => setCopyright(e.target.value)}
+          className="w-full rounded-xl border border-line px-4 py-2.5 outline-none focus:border-accent"
+          placeholder="비우면 자동: © 연도 사이트이름. All rights reserved."
+        />
       </div>
 
       <div className="mt-5 flex items-center gap-3">

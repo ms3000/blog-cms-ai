@@ -49,6 +49,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   ]);
   const brand = { name: settings.siteName, logoUrl: settings.logoUrl };
   const popularItems = popular.map((p) => ({ slug: p.slug, title: p.title }));
+  const copyrightText =
+    settings.copyright || `© ${new Date().getFullYear()} ${settings.siteName}. All rights reserved.`;
 
   return (
     <html lang="ko">
@@ -68,7 +70,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="flex min-h-screen flex-col bg-white text-ink antialiased">
         {/* 사이드바 + 본문을 하나의 그룹으로 묶어 화면 중앙에 배치 */}
         <div className="mx-auto block w-full max-w-[1440px] flex-1 lg:flex">
-          <SiteNav categories={categories} brand={brand} popular={popularItems} />
+          <SiteNav categories={categories} brand={brand} popular={popularItems} copyright={copyrightText} />
           <main className="min-w-0 flex-1">{children}</main>
         </div>
         {/* Footer 는 그룹 밖 — 배경이 화면 전체 폭으로 이어짐 */}

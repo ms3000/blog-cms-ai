@@ -71,7 +71,12 @@ export default async function AdminPage({
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <AdminSettings initialName={settings.siteName} initialLogo={settings.logoUrl} />
+        <AdminSettings
+          initialName={settings.siteName}
+          initialLogo={settings.logoUrl}
+          initialFooterDescription={settings.footerDescription}
+          initialCopyright={settings.copyright || ""}
+        />
         <AdminCategories initial={managed} />
       </div>
 

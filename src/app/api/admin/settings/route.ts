@@ -29,12 +29,19 @@ export async function POST(req: Request) {
   }
 
   const admin = createAdminClient();
-  const update: { site_name?: string; logo_url?: string | null; updated_at: string } = {
+  const update: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
   };
 
   const siteName = String(form.get("site_name") || "").trim();
   if (siteName) update.site_name = siteName;
+
+  if (form.has("footer_description")) {
+    update.footer_description = String(form.get("footer_description") || "").trim() || null;
+  }
+  if (form.has("copyright")) {
+    update.copyright = String(form.get("copyright") || "").trim() || null;
+  }
 
   if (form.get("remove_logo") === "1") {
     update.logo_url = null;
