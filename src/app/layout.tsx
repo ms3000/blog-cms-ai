@@ -52,6 +52,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const copyrightText =
     settings.copyright || `© ${new Date().getFullYear()} ${settings.siteName}. All rights reserved.`;
 
+  const gaId = settings.gaMeasurementId;
+
   return (
     <html lang="ko">
       <head>
@@ -66,6 +68,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
         />
+        {/* Google Analytics */}
+        {gaId && (
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`,
+              }}
+            />
+          </>
+        )}
       </head>
       <body className="flex min-h-screen flex-col bg-white text-ink antialiased">
         {/* 사이드바 + 본문을 하나의 그룹으로 묶어 화면 중앙에 배치 */}

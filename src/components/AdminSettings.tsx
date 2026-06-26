@@ -7,15 +7,25 @@ export function AdminSettings({
   initialLogo,
   initialFooterDescription,
   initialCopyright,
+  initialGaMeasurementId,
+  initialGaPropertyId,
+  initialGaServiceAccount,
 }: {
   initialName: string;
   initialLogo: string | null;
   initialFooterDescription: string;
   initialCopyright: string;
+  initialGaMeasurementId: string;
+  initialGaPropertyId: string;
+  initialGaServiceAccount: string;
 }) {
   const [name, setName] = useState(initialName);
   const [footerDesc, setFooterDesc] = useState(initialFooterDescription);
   const [copyright, setCopyright] = useState(initialCopyright);
+  const [gaMeasurementId, setGaMeasurementId] = useState(initialGaMeasurementId);
+  const [gaPropertyId, setGaPropertyId] = useState(initialGaPropertyId);
+  const [gaServiceAccount, setGaServiceAccount] = useState(initialGaServiceAccount);
+  const [showSa, setShowSa] = useState(false);
   const [logo, setLogo] = useState<string | null>(initialLogo);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -31,6 +41,9 @@ export function AdminSettings({
       fd.append("site_name", name);
       fd.append("footer_description", footerDesc);
       fd.append("copyright", copyright);
+      fd.append("ga_measurement_id", gaMeasurementId);
+      fd.append("ga_property_id", gaPropertyId);
+      fd.append("ga_service_account", gaServiceAccount);
       if (file) fd.append("logo", file);
       const res = await fetch("/api/admin/settings", { method: "POST", body: fd });
       const data = await res.json();
@@ -145,6 +158,51 @@ export function AdminSettings({
           className="w-full rounded-xl border border-line px-4 py-2.5 outline-none focus:border-accent"
           placeholder="비우면 자동: © 연도 사이트이름. All rights reserved."
         />
+      </div>
+
+      {/* Google Analytics 설정 */}
+      <div className="mt-6 border-t border-line pt-5">
+        <h3 className="mb-1 text-sm font-bold">Google Analytics 4</h3>
+        <p className="mb-3 text-xs text-ink-muted">태그 자동 삽입 + 유입 분석 데이터 연동</p>
+        <div className="space-y-3">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium">Measurement ID</label>
+            <input
+              value={gaMeasurementId}
+              onChange={(e) => setGaMeasurementId(e.target.value)}
+              className="w-full rounded-xl border border-line px-4 py-2.5 font-mono text-sm outline-none focus:border-accent"
+              placeholder="G-XXXXXXXXXX"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium">Property ID</label>
+            <input
+              value={gaPropertyId}
+              onChange={(e) => setGaPropertyId(e.target.value)}
+              className="w-full rounded-xl border border-line px-4 py-2.5 font-mono text-sm outline-none focus:border-accent"
+              placeholder="123456789 (숫자만)"
+            />
+          </div>
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="text-sm font-medium">서비스 계정 JSON</label>
+              <button
+                type="button"
+                onClick={() => setShowSa((v) => !v)}
+                className="text-xs text-ink-muted underline"
+              >
+                {showSa ? "숨기기" : "보기"}
+              </button>
+            </div>
+            <textarea
+              value={gaServiceAccount}
+              onChange={(e) => setGaServiceAccount(e.target.value)}
+              rows={showSa ? 6 : 2}
+              className="w-full resize-y rounded-xl border border-line px-4 py-2.5 font-mono text-xs outline-none focus:border-accent"
+              placeholder='{"type":"service_account","project_id":"...","private_key":"...","client_email":"...",...}'
+            />
+          </div>
+        </div>
       </div>
 
       <div className="mt-5 flex items-center gap-3">

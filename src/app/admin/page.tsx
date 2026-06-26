@@ -4,6 +4,7 @@ import { AdminUploader } from "@/components/AdminUploader";
 import { AdminPostList } from "@/components/AdminPostList";
 import { AdminSettings } from "@/components/AdminSettings";
 import { AdminCategories } from "@/components/AdminCategories";
+import { AdminAnalytics } from "@/components/AdminAnalytics";
 import { getPosts } from "@/lib/posts";
 import { getSettings } from "@/lib/settings";
 import { getManagedCategories } from "@/lib/categories";
@@ -76,8 +77,15 @@ export default async function AdminPage({
           initialLogo={settings.logoUrl}
           initialFooterDescription={settings.footerDescription}
           initialCopyright={settings.copyright || ""}
+          initialGaMeasurementId={settings.gaMeasurementId || ""}
+          initialGaPropertyId={settings.gaPropertyId || ""}
+          initialGaServiceAccount={settings.gaServiceAccount || ""}
         />
         <AdminCategories initial={managed} />
+      </div>
+
+      <div className="mt-8">
+        <AdminAnalytics hasConfig={!!(settings.gaPropertyId && settings.gaServiceAccount)} />
       </div>
 
       <div className="mt-14">

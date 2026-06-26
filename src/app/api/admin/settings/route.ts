@@ -42,6 +42,16 @@ export async function POST(req: Request) {
   if (form.has("copyright")) {
     update.copyright = String(form.get("copyright") || "").trim() || null;
   }
+  if (form.has("ga_measurement_id")) {
+    update.ga_measurement_id = String(form.get("ga_measurement_id") || "").trim() || null;
+  }
+  if (form.has("ga_property_id")) {
+    update.ga_property_id = String(form.get("ga_property_id") || "").trim() || null;
+  }
+  if (form.has("ga_service_account")) {
+    const sa = String(form.get("ga_service_account") || "").trim();
+    update.ga_service_account = sa || null;
+  }
 
   if (form.get("remove_logo") === "1") {
     update.logo_url = null;
