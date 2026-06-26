@@ -7,39 +7,45 @@ import { getMenuCategories } from "@/lib/categories";
 import { getPopularPosts } from "@/lib/posts";
 import { getSettings } from "@/lib/settings";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  title: {
-    default: `${site.name}`,
-    template: `%s | ${site.name}`,
-  },
-  description: site.description,
-  applicationName: site.name,
-  alternates: {
-    canonical: "/",
-    types: {
-      "application/rss+xml": [{ url: absUrl("/feed.xml"), title: `${site.name} RSS` }],
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  const siteName = settings.siteName;
+  const description = settings.footerDescription || site.description;
+
+  return {
+    metadataBase: new URL(site.url),
+    title: {
+      default: siteName,
+      template: `%s | ${siteName}`,
     },
-  },
-  openGraph: {
-    type: "website",
-    siteName: site.name,
-    locale: site.locale,
-    url: site.url,
-    title: site.name,
-    description: site.description,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: site.name,
-    description: site.description,
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large" },
-  },
-};
+    description,
+    applicationName: siteName,
+    alternates: {
+      canonical: "/",
+      types: {
+        "application/rss+xml": [{ url: absUrl("/feed.xml"), title: `${siteName} RSS` }],
+      },
+    },
+    openGraph: {
+      type: "website",
+      siteName,
+      locale: site.locale,
+      url: site.url,
+      title: siteName,
+      description,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: siteName,
+      description,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true, "max-image-preview": "large" },
+    },
+  };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [categories, settings, popular] = await Promise.all([
