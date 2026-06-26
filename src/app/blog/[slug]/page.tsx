@@ -43,7 +43,7 @@ export async function generateMetadata({
     openGraph: {
       type: "article",
       url,
-      title: post.seo_title || post.title,
+      title: post.title,
       description: post.excerpt || undefined,
       siteName: site.name,
       locale: site.locale,
@@ -55,7 +55,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: post.seo_title || post.title,
+      title: post.title,
       description: post.excerpt || undefined,
       images: post.cover_url ? [post.cover_url] : undefined,
     },
